@@ -14,6 +14,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Plus, Menu, Sun, Moon, Clock, FolderPlus } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Animatable from 'react-native-animatable';
+import { useRef } from 'react';
 
 interface Project {
   id: string;
@@ -37,7 +38,7 @@ export default function Dashboard() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
   const [showFabOptions, setShowFabOptions] = useState(false);
-  const fabAnimation = new Animated.Value(0);
+  const fabAnimation = useRef(new Animated.Value(0)).current;
   const router = useRouter();
 
   useEffect(() => {
@@ -85,25 +86,41 @@ export default function Dashboard() {
   };
 
   const toggleFabOptions = () => {
-    if (showFabOptions) {
+    const newShowFabOptions = !showFabOptions;
+    
+    if (newShowFabOptions) {
+      // Show options first, then animate
+      setShowFabOptions(true);
+      requestAnimationFrame(() => {
+        Animated.timing(fabAnimation, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      });
+    } else {
+      // Animate out first, then hide
       Animated.timing(fabAnimation, {
         toValue: 0,
         duration: 200,
         useNativeDriver: true,
-      }).start(() => setShowFabOptions(false));
-    } else {
-      setShowFabOptions(true);
-      Animated.timing(fabAnimation, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
+      }).start(() => {
+        setShowFabOptions(false);
+      });
     }
   };
 
   const handleFabOptionPress = (route: string) => {
-    toggleFabOptions();
-    setTimeout(() => router.push(route), 100);
+    // Close the FAB options first
+    Animated.timing(fabAnimation, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowFabOptions(false);
+      // Navigate after animation completes
+      router.push(route);
+    });
   };
 
   const renderProject = ({ item }: { item: Project }) => (
