@@ -161,43 +161,37 @@ export default function Dashboard() {
       </View>
 
       {showFabOptions && (
-        <TouchableOpacity
-          style={styles.fabOverlay}
-          activeOpacity={1}
-          onPress={() => {}} // Don't close on overlay press, only on option selection
+        <Animated.View
+          style={[
+            styles.fabOptionsContainer,
+            {
+              opacity: fabAnimation,
+              transform: [
+                {
+                  translateY: fabAnimation.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [20, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
         >
-          <Animated.View
-            style={[
-              styles.fabOptionsContainer,
-              {
-                opacity: fabAnimation,
-                transform: [
-                  {
-                    translateY: fabAnimation.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [20, 0],
-                    }),
-                  },
-                ],
-              },
-            ]}
+          <TouchableOpacity
+            style={[styles.fabOption, currentStyles.fabOption]}
+            onPress={() => handleFabOptionPress('/quick-start')}
           >
-            <TouchableOpacity
-              style={[styles.fabOption, currentStyles.fabOption]}
-              onPress={() => handleFabOptionPress('/quick-start')}
-            >
-              <Clock size={20} color={isDarkMode ? "#ffffff" : "#000000"} />
-              <Text style={[styles.fabOptionText, currentStyles.fabOptionText]}>Quick Start</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.fabOption, currentStyles.fabOption]}
-              onPress={() => handleFabOptionPress('/new-project')}
-            >
-              <FolderPlus size={20} color={isDarkMode ? "#ffffff" : "#000000"} />
-              <Text style={[styles.fabOptionText, currentStyles.fabOptionText]}>New Project</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        </TouchableOpacity>
+            <Clock size={20} color={isDarkMode ? "#ffffff" : "#000000"} />
+            <Text style={[styles.fabOptionText, currentStyles.fabOptionText]}>Quick Start</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.fabOption, currentStyles.fabOption]}
+            onPress={() => handleFabOptionPress('/new-project')}
+          >
+            <FolderPlus size={20} color={isDarkMode ? "#ffffff" : "#000000"} />
+            <Text style={[styles.fabOptionText, currentStyles.fabOptionText]}>New Project</Text>
+          </TouchableOpacity>
+        </Animated.View>
       )}
 
       <TouchableOpacity style={styles.fab} onPress={toggleFabOptions}>
@@ -347,14 +341,6 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   fabOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'transparent',
-  },
-  fabOptionsContainer: {
     position: 'absolute',
     bottom: 170,
     right: 20,
