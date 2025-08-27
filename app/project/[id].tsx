@@ -43,6 +43,9 @@ export default function ProjectDetail() {
   const [hasScript, setHasScript] = useState(false);
   const [editMinutes, setEditMinutes] = useState('');
   const [editSeconds, setEditSeconds] = useState('');
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [renameRunId, setRenameRunId] = useState('');
+  const [renameValue, setRenameValue] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -168,43 +171,9 @@ export default function ProjectDetail() {
   };
 
   const showRenameDialog = (run: Run) => {
-    // Create a custom modal for renaming since Alert.prompt doesn't work reliably
-    const [tempName, setTempName] = useState(run.name);
-    
-    Alert.alert(
-      'Rename Run',
-      '',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Save',
-          onPress: () => {
-            // We'll handle this with a proper input modal
-            showRenameModal(run);
-          },
-        },
-      ]
-    );
-  };
-
-  const showRenameModal = (run: Run) => {
-    Alert.prompt(
-      'Rename Run',
-      'Enter new name:',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Save',
-          onPress: (newName) => {
-            if (newName && newName.trim()) {
-              renameRun(run.id, newName.trim());
-            }
-          },
-        },
-      ],
-      'plain-text',
-      run.name
-    );
+    setShowRenameModal(true);
+    setRenameRunId(run.id);
+    setRenameValue(run.name);
   };
 
   const confirmDeleteRun = (run: Run) => {
@@ -225,6 +194,10 @@ export default function ProjectDetail() {
   const renameRun = async (runId: string, newName: string) => {
     if (!project) return;
 
+    if (!newName.trim()) {
+      Alert.alert('Error', 'Run name cannot be empty');
+      return;
+    }
     try {
       const storedProjects = await AsyncStorage.getItem('projects');
       if (storedProjects) {
@@ -237,6 +210,9 @@ export default function ProjectDetail() {
             projects[projectIndex].runs[runIndex].name = newName;
             await AsyncStorage.setItem('projects', JSON.stringify(projects));
             setProject(projects[projectIndex]);
+            setShowRenameModal(false);
+            setRenameRunId('');
+            setRenameValue('');
           }
         }
       }
@@ -559,6 +535,51 @@ export default function ProjectDetail() {
               <TouchableOpacity
                 style={[styles.modalButton, styles.saveButton]}
                 onPress={saveDurationChanges}
+              >
+                <Text style={styles.saveButtonText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showRenameModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowRenameModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.editModal, currentStyles.editModal]}>
+            <Text style={[styles.modalTitle, currentStyles.modalTitle]}>Rename Run</Text>
+            
+            <View style={styles.modalSection}>
+              <Text style={[styles.modalLabel, currentStyles.modalLabel]}>Run Name</Text>
+              <TextInput
+                style={[styles.modalInput, currentStyles.modalInput]}
+                value={renameValue}
+                onChangeText={setRenameValue}
+                placeholder="Enter run name"
+                placeholderTextColor={isDarkMode ? "#666" : "#999"}
+                autoFocus={true}
+                selectTextOnFocus={true}
+              />
+            </View>
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => {
+                  setShowRenameModal(false);
+                  setRenameRunId('');
+                  setRenameValue('');
+                }}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.saveButton]}
+                onPress={() => renameRun(renameRunId, renameValue)}
               >
                 <Text style={styles.saveButtonText}>Save</Text>
               </TouchableOpacity>

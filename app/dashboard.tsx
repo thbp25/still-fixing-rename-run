@@ -164,7 +164,7 @@ export default function Dashboard() {
         <TouchableOpacity
           style={styles.fabOverlay}
           activeOpacity={1}
-          onPress={toggleFabOptions}
+          onPress={() => {}} // Don't close on overlay press, only on option selection
         >
           <Animated.View
             style={[
@@ -201,7 +201,20 @@ export default function Dashboard() {
       )}
 
       <TouchableOpacity style={styles.fab} onPress={toggleFabOptions}>
-        <Plus size={28} color="#ffffff" />
+        <Animated.View
+          style={{
+            transform: [
+              {
+                rotate: fabAnimation.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['0deg', '45deg'],
+                }),
+              },
+            ],
+          }}
+        >
+          <Plus size={28} color="#ffffff" />
+        </Animated.View>
       </TouchableOpacity>
 
       <Modal
